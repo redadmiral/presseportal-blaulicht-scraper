@@ -1,6 +1,5 @@
 import datetime
 import os
-import logging
 from bs4 import BeautifulSoup
 import requests
 from datastructures import Article
@@ -13,6 +12,8 @@ threshold_date = datetime.datetime.now() - datetime.timedelta(days=2)
 
 while date > datetime.datetime.now() - datetime.timedelta(hours=25):
 
+    print(f"Scraping page {int(offset/30)}.")
+
     soup = BeautifulSoup(requests.get(BASE_URL + f"?langid=1&start={offset}").text, features="html.parser")
     police_stories = soup.findAll("div", {"class": "storylist_item"})
 
@@ -21,7 +22,7 @@ while date > datetime.datetime.now() - datetime.timedelta(hours=25):
         date = datetime.datetime.strptime(date_raw, "%d.%m.%Y - %H:%M")
 
         article_link = story.contents[2].a["href"]
-        logging.info(f"Retrieving article {article_link}.")
+        print(f"Retrieving article {article_link}.")
         full_article = BeautifulSoup(
             requests.get(article_link).text, features="html.parser"
         )
@@ -55,5 +56,6 @@ while date > datetime.datetime.now() - datetime.timedelta(hours=25):
 
         scraperwiki.sqlite.save(unique_keys=["id"], data=article.dict())
     offset += 30
+
 
 os.rename("scraperwiki.sqlite", "data.sqlite")
